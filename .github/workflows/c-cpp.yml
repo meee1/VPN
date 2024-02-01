@@ -13,11 +13,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup Android NDK
-      uses: nttld/setup-ndk@v1.4.2  
-      with:
-          add-to-path: true
-          local-cache: true
     - name: build
       run: make build-client
     - name: build
