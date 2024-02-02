@@ -107,6 +107,10 @@ int configure_route(uint8_t* route, uint8_t* server_ip)
     return sys;
 }
 
+ static inline in_addr_t *as_in_addr(struct sockaddr *sa) {
+     return &((struct sockaddr_in *)sa)->sin_addr.s_addr;
+ }
+
 /**
  * create_tun_interface - Opens a tun device.
  * @virtual_subnet: subet for ifconfig (needed for linux.)
@@ -121,45 +125,39 @@ int create_tun_interface(char* virtual_subnet)
 {
     int fd = -1;
 
-    #ifdef __APPLE__
-
-    if( (fd = open("/dev/tun0", O_RDWR)) < 0 ) {
-        perror("Cannot open tun0 dev\n");
-        exit(1);
-    }
-    int sys = system("ifconfig tun0 inet 10.0.0.2 10.0.0.255 up");
-    if(sys < 0)
-    {
-        printf("Could not configure tun device!\n");
-        exit(EXIT_FAILURE);
-    }  
-    #endif
-
-    #ifdef __linux__
-
+    int mtu = 0;
     struct ifreq ifr;
     int err;
 
-    if( (fd = open("/dev/net/tun", O_RDWR)) == -1 ) {
-           perror("open /dev/net/tun");
+    if( (fd = open("/dev/tun", O_RDWR | O_NONBLOCK)) == -1 ) {
+           printf("open /dev/tun");
            exit(1);
     }
 
-    char* devname = "tun0";
+    //char* devname = "tun0";
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-    strncpy(ifr.ifr_name, devname, IFNAMSIZ); // devname = "tun0" or "tun1", etc
+    //strncpy(ifr.ifr_name, devname, IFNAMSIZ); // devname = "tun0" or "tun1", etc
 
     /* ioctl will use ifr.if_name as the name of TUN
          * interface to open: "tun0", etc. */
     if ( (err = ioctl(fd, TUNSETIFF, (void *) &ifr)) == -1 ) {
-        perror("ioctl TUNSETIFF");
+        printf("ioctl TUNSETIFF");
         close(fd);
         exit(1);
     }
 
+/*
+    // Activate interface.
+    ifr.ifr_flags = IFF_UP;
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr)) {
+        printf("Cannot activate %s: %s", ifr.ifr_name, strerror(errno));
+        goto error;
+    }
+*/
+
     char cmd [1000] = {0x0};
-    sprintf(cmd,"ifconfig tun0 %s up", virtual_subnet);
+    sprintf(cmd,"ifconfig %s %s up", ifr.ifr_name, virtual_subnet);
     int sys = system(cmd);
     if(sys < 0)
     {
@@ -167,9 +165,45 @@ int create_tun_interface(char* virtual_subnet)
         exit(EXIT_FAILURE);
     }
 
-    #endif
+    // Set MTU if it is specified.
+    ifr.ifr_mtu = mtu;
+    if (mtu > 0 && ioctl(fd, SIOCSIFMTU, &ifr)) {
+        printf("Cannot set MTU on %s: %s", ifr.ifr_name, strerror(errno));
+        goto error;
+    }
+
+    char address[65];
+    int prefix;
+    int chars;
+    int count = 0;
+
+    while (sscanf(virtual_subnet, " %64[^/]/%d %n", address, &prefix, &chars) == 2) {
+        virtual_subnet += chars;
+
+        if (inet_pton(AF_INET, virtual_subnet, as_in_addr(&ifr.ifr_addr)) != 1 ||
+                prefix < 0 || prefix > 32) {
+            count = -2;
+            break;
+        }
+
+        if (ioctl(fd, SIOCSIFADDR, &ifr)) {
+            count = (errno == EINVAL) ? -2 : -1;
+            break;
+        }
+
+        in_addr_t mask = prefix ? (~0 << (32 - prefix)) : 0;
+        *as_in_addr(&ifr.ifr_netmask) = htonl(mask);
+        if (ioctl(fd, SIOCSIFNETMASK, &ifr)) {
+            count = (errno == EINVAL) ? -2 : -1;
+            break;
+        }
+    }
 
     return fd; 
+
+error:
+    close(fd);
+    return -1;
 }
 
 /**

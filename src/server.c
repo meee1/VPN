@@ -80,6 +80,7 @@ void handle_vpn_connection(struct vpn_connection* conn, char* buffer, int rc, st
             {
                 /* Verify error */
                 printf("Decrypted text failed to verify\n");
+                free(tag);
                 break;
             }
             free(tag);
@@ -230,13 +231,14 @@ void start_server(const char* network)
     registry->udp_socket = create_udp_socket(&server, "0");
     registry->tun_fd = create_tun_interface(network);
 
+    /*
     int conf = configure_ip_forwarding(network);
     if(conf < 0)
     {
         printf("[ERROR] Could not configure iptables!\n");
         exit(EXIT_FAILURE);
     }
-
+    */
     /* init lock for threads */
     if (pthread_mutex_init(&lock, NULL) != 0)
     {
@@ -276,7 +278,7 @@ void start_server(const char* network)
 
 int main()
 {
-    start_server("10.0.0.1/24");
+    start_server("192.168.88.0/31");
     /* code */
     return 0;
 }

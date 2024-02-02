@@ -7,8 +7,7 @@ LOCAL_MODULE := vpnclient
 
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_SHARED_LIBRARIES := libc libm libdl libssl libcrypto
-
+LOCAL_SHARED_LIBRARIES := libc libm libdl libssl libcrypto liblog
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/includes
 
@@ -26,8 +25,7 @@ LOCAL_MODULE := vpnserver
 
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_SHARED_LIBRARIES := libc libm libdl libssl libcrypto
-
+LOCAL_SHARED_LIBRARIES := libc libm libdl libssl libcrypto liblog
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/includes
 

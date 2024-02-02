@@ -52,6 +52,7 @@ void* thread_socket2tun()
         {
             /* Verify error */
             printf("Decrypted text failed to verify\n");
+			free(tag);
             continue;
         }
 
@@ -166,7 +167,7 @@ static void handshake()
     free(msg);
 }
 
-int start_vpn_client(const char* route, const char* server_ip)
+int start_vpn_client(const char* server_ip)
 {
 	signal(SIGINT, stop_client);
 
@@ -191,7 +192,7 @@ int start_vpn_client(const char* route, const char* server_ip)
 	}
 
 	/* Create TUN interface. */
-	current_connection->tun_fd = create_tun_interface("10.0.0.1/24");
+	current_connection->tun_fd = create_tun_interface("192.168.88.1/31");
 	if(current_connection->tun_fd <= 0)
 	{
 		printf("[ERROR] Could not create TUN device.\n");
@@ -199,13 +200,13 @@ int start_vpn_client(const char* route, const char* server_ip)
 	}
 
 	/* Configure all IP routes. */
-	int conf = configure_route((uint8_t*) route, (uint8_t*) server_ip);
+	/*int conf = configure_route((uint8_t*) route, (uint8_t*) server_ip);
 	if(conf < 0)
 	{
 		printf("[ERROR] Could not configure ip route.\n");
 		exit(EXIT_FAILURE);
 	}
-
+*/
 	printf("\n\n");
 	printf("VPN Client is Connecting...");
 	fflush(stdout);
@@ -229,11 +230,11 @@ int start_vpn_client(const char* route, const char* server_ip)
 
 int main(int argc, char const *argv[])
 {
-	if(argc != 3)
+	if(argc != 2)
 	{
-		printf("Usage: %s <route> <vpn ip>", argv[0]);
+		printf("Usage: %s <vpn ip>", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
-	start_vpn_client(argv[1], argv[2]);
+	start_vpn_client(argv[1]);
 }

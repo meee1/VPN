@@ -13,12 +13,18 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <cutils/log.h>
+#include <errno.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 #ifdef __linux__
 #include <linux/if.h>
 #include <linux/if_tun.h>
+
 #endif
 
+#define LOG_TAG "vpn"
 
 struct ip_hdr {
     uint8_t ihl : 4;

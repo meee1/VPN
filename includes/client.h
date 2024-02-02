@@ -39,6 +39,6 @@ struct vpn_connection
 };
 
 
-int start_vpn_client(const char* route, const char* server_ip);
+int start_vpn_client(const char* server_ip);
 
 #endif
