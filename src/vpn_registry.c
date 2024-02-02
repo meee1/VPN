@@ -19,10 +19,10 @@ struct vpn_registry* create_registry(uint8_t* ip)
 {
     struct vpn_registry* registry = malloc(sizeof(struct vpn_registry));
 
-    /* Allocate IP and remove CIDR */
+    /* Allocate IP and remove CIDR */    
     registry->vpn_ip = malloc(strlen((char*) ip)-2);
     memcpy((char*)registry->vpn_ip, (char*)ip, strlen((char*)ip)-3);
-    registry->vpn_ip[strlen((char*) ip)-2] = 0;
+    registry->vpn_ip[strlen((char*) ip)-3] = 0;
 
     /* Allocate space for hosts */
     char* hosts_str = strchr((char*) ip, '/');
@@ -35,7 +35,7 @@ struct vpn_registry* create_registry(uint8_t* ip)
 
     if(DEBUG)
     {
-        printf("converted ip %s to %d\n", registry->vpn_ip, sa.sin_addr.s_addr);
+        printf("converted ip %s to %d orig %s len %d\n", registry->vpn_ip, sa.sin_addr, ip, strlen((char*) ip));
     }
 
     registry->vpn_ip_raw = sa.sin_addr.s_addr;

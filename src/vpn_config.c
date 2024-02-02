@@ -130,8 +130,10 @@ int create_tun_interface(char* virtual_subnet)
     int err;
 
     if( (fd = open("/dev/tun", O_RDWR | O_NONBLOCK)) == -1 ) {
-           printf("open /dev/tun");
+        if( (fd = open("/dev/net/tun", O_RDWR | O_NONBLOCK)) == -1 ) {
+           printf("open /dev/net/tun");           
            exit(1);
+        }
     }
 
     //char* devname = "tun0";

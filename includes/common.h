@@ -13,7 +13,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
-#include <cutils/log.h>
+//#include <cutils/log.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
