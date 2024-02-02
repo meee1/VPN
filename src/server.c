@@ -77,7 +77,7 @@ void handle_vpn_connection(struct vpn_connection* conn, char* buffer, int rc, st
             unsigned char IV[16];
             memcpy(IV, buffer+16, 16);
 
-            int decrypted_len = vpn_aes_decrypt(buffer+16, rc-16, aad, strlen(aad), tag, conn->key, IV, decryptedtext);
+            int decrypted_len = vpn_aes_decrypt(buffer+16+16, rc-16-16, aad, strlen(aad), tag, conn->key, IV, decryptedtext);
             if(decrypted_len < 0)
             {
                 /* Verify error */

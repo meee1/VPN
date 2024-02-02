@@ -49,7 +49,7 @@ void* thread_socket2tun()
 		unsigned char IV[16];
 		memcpy(IV, buffer+16, 16);
 
-        int decrypted_len = vpn_aes_decrypt(buffer+16, rc-16, aad, strlen(aad), tag, key, IV, decryptedtext);
+        int decrypted_len = vpn_aes_decrypt(buffer+16+16, rc-16-16, aad, strlen(aad), tag, key, IV, decryptedtext);
         if(decrypted_len < 0)
         {
             /* Verify error */
