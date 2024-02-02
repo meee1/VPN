@@ -154,7 +154,7 @@ static void handshake()
 	current_connection->bufio = BIO_new_mem_buf((void*)p, rc);
 	current_connection->myRSA = PEM_read_bio_RSAPublicKey(current_connection->bufio, 0, 0, 0);
 
-	struct crypto_message* msg = vpn_rsa_encrypt(key, strlen(key), current_connection->myRSA);
+	struct crypto_message* msg = vpn_rsa_encrypt(key, sizeof key, current_connection->myRSA);
 
 	rc = sendto(current_connection->udp_socket, msg->buffer, msg->size, 0, (struct sockaddr*)&(current_connection->server_addr), sizeof(current_connection->server_addr));
 	rc = read(current_connection->udp_socket, buffer, 100);

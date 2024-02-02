@@ -2,7 +2,7 @@
 #include <math.h>
 
 
-#define DEBUG 0
+#define DEBUG 1
 
 /**
  * create_registry - Creates a vpn registry, bound to a ip.
@@ -138,6 +138,7 @@ inline struct vpn_connection* register_connection(struct vpn_registry* registry,
  */
 struct vpn_connection* get_vpn_connection_addr(struct vpn_registry* registry, int addr)
 {
+    printf("look for %d\n", addr);
     for (int i = 0; i < registry->hosts; ++i)
     {
         if (registry->vpn_connection_registry[i] == NULL)

@@ -267,9 +267,9 @@ void start_server(const char* network)
         printf("\rConnected Users: %d, Sending: %d kb/s, Receving: %d kb/s", registry->size, (registry->data_in/1024)/3, (registry->data_out/1024)/3);
         fflush(stdout);
 
-        pthread_mutex_lock(&lock);
-        registry_check_timeout(registry);
-        pthread_mutex_unlock(&lock);
+        //pthread_mutex_lock(&lock);
+        //registry_check_timeout(registry);
+        //pthread_mutex_unlock(&lock);
 
         registry->data_in = 0;
         registry->data_out = 0;
