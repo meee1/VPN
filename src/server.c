@@ -74,6 +74,8 @@ void handle_vpn_connection(struct vpn_connection* conn, char* buffer, int rc, st
             unsigned char decryptedtext[2555];
             unsigned char* tag = malloc(16);
             memcpy(tag, buffer, 16);
+            unsigned char IV[16];
+            memcpy(IV, buffer+16, 16);
 
             int decrypted_len = vpn_aes_decrypt(buffer+16, rc-16, aad, strlen(aad), tag, conn->key, IV, decryptedtext);
             if(decrypted_len < 0)
@@ -194,13 +196,16 @@ void* thread_tun2socket()
         /* Encrypt */
         unsigned char ciphertext[2555];
         unsigned char tag[16];
+        unsigned char IV[16];
+        RAND_bytes(IV, 16);
         int cipher_len = vpn_aes_encrypt(buffer, rc, aad, strlen(aad), conn->key, IV, ciphertext, tag);
 
-        unsigned char* encrypt_tag = malloc(cipher_len+16);
+        unsigned char* encrypt_tag = malloc(cipher_len+16+16);
         memcpy(encrypt_tag, tag, 16);
-        memcpy(encrypt_tag+16, ciphertext, cipher_len);
+        memcpy(encrypt_tag+16, IV, 16);
+        memcpy(encrypt_tag+16+16, ciphertext, cipher_len);
 
-        rc = sendto(registry->udp_socket, encrypt_tag, cipher_len+16, 0, (struct sockaddr*)conn->connection, client_struct_length);
+        rc = sendto(registry->udp_socket, encrypt_tag, cipher_len+16+16, 0, (struct sockaddr*)conn->connection, client_struct_length);
         conn->data_recv += rc;
         registry->data_in += rc;
         free(encrypt_tag);

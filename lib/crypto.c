@@ -1,10 +1,10 @@
 #include "../includes/crypto.h"
 
  /* A 128 bit IV */
-const unsigned char IV[] = "0123456789012345";
+//const unsigned char IV[] = "0123456789012345";
 
     /* Some additional data to be authenticated */
-const unsigned char aad[] = "Some AAD data\0";
+const unsigned char aad[] = "Some AAD data";
 
 /** crypto_instance
  * Used to initilize crypto context for server
