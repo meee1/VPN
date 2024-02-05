@@ -16,8 +16,8 @@
 #define PUB_EXP 3
 
 
-extern const unsigned char IV[];
-extern const unsigned char aad[];
+extern unsigned char IV[];
+extern unsigned char aad[];
 
 struct crypto_instance
 {

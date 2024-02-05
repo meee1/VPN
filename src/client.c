@@ -75,7 +75,7 @@ void* thread_socket2tun()
  */
 void* thread_tun2socket()
 {
-	char* buffer[2555] = {0};
+	unsigned char buffer[2555] = {0};
 	while(1)
 	{
         int rc = read(current_connection->tun_fd, buffer, 2555);
@@ -180,7 +180,7 @@ int start_vpn_client(const char* server_ip)
 	OpenSSL_add_all_algorithms();
 
 	/* init Key */
-	RAND_bytes(key, sizeof key);
+	//RAND_bytes(key, sizeof key);
 
 	for (int i = 0; i < 32; ++i)
 	{
@@ -197,7 +197,7 @@ int start_vpn_client(const char* server_ip)
 	}
 
 	/* Create TUN interface. */
-	current_connection->tun_fd = create_tun_interface("192.168.88.1/31");
+	current_connection->tun_fd = create_tun_interface("192.168.88.2/30");
 	if(current_connection->tun_fd <= 0)
 	{
 		printf("[ERROR] Could not create TUN device.\n");
@@ -215,16 +215,16 @@ int start_vpn_client(const char* server_ip)
 	printf("\n\n");
 	printf("VPN Client is Connecting...");
 	fflush(stdout);
-	handshake();
+	//handshake();
     printf("\rVPN Client succesfully Connected!\n");
-
 	/* Start socket / TUN threads */
 	start_threads();
 
     while(1)
     {
         sleep(2);
-        printf("\rStats - Sent: %d kb/s, Recv: %d kb/s", (current_connection->data_sent/1024)/2, (current_connection->data_recv/1024)/2);
+		sendto(current_connection->udp_socket, "ping", 4, 0, (struct sockaddr*)&(current_connection->server_addr), sizeof(current_connection->server_addr));
+        printf("\rStats - socket2tun Sent: %f kb/s, tun2socket Recv: %f kb/s", (current_connection->data_sent/1024.0)/2, (current_connection->data_recv/1024.0)/2);
         fflush(stdout);
         current_connection->data_sent = 0;
         current_connection->data_recv = 0;
@@ -235,6 +235,68 @@ int start_vpn_client(const char* server_ip)
 
 int main(int argc, char const *argv[])
 {
+	/*
+	OpenSSL_add_all_algorithms();
+		unsigned char buffer[2555] = {0};
+
+		int rc = 5;
+
+
+        unsigned char ciphertext[2555];
+        unsigned char tag[16];
+        unsigned char IV[16];
+        RAND_bytes(IV, 16);
+        int cipher_len = vpn_aes_encrypt(buffer, rc, aad, strlen(aad), key, IV, ciphertext, tag);
+
+        unsigned char* encrypt_tag = malloc(cipher_len+16+16);
+        memcpy(encrypt_tag, tag, 16);
+        memcpy(encrypt_tag+16, IV, 16);
+        memcpy(encrypt_tag+16+16, ciphertext, cipher_len);
+
+	for (int i = 0; i < 16; ++i)
+	{
+		printf("%x:", tag[i]);
+	}
+		for (int i = 0; i < 16; ++i)
+	{
+		printf("%x:", IV[i]);
+	}
+	printf("\n");
+
+	for (int i = 0; i < cipher_len+16+16; ++i)
+	{
+		printf("%x:", encrypt_tag[i]);
+	}
+	printf("\n");
+
+
+
+
+		memcpy(buffer, encrypt_tag, cipher_len+16+16);
+		rc= cipher_len+16+16;
+
+	for (int i = 0; i < rc; ++i)
+	{
+		printf("%x:", (unsigned char)buffer[i]);
+	}
+	printf("\n");
+
+        unsigned char decryptedtext[2555];
+        //unsigned char* tag = malloc(16);
+        memcpy(tag, buffer, 16);
+		//unsigned char IV[16];
+		memcpy(IV, buffer+16, 16);
+
+        int decrypted_len = vpn_aes_decrypt(buffer+16+16, rc-16-16, aad, strlen(aad), tag, key, IV, decryptedtext);
+
+	for (int i = 0; i < decrypted_len; ++i)
+	{
+		printf("%x:", decryptedtext[i]);
+	}
+	printf("\n");
+	printf("%d len\n",decrypted_len);
+
+*/
 	if(argc != 2)
 	{
 		printf("Usage: %s <vpn ip>", argv[0]);
