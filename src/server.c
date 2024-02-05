@@ -157,45 +157,6 @@ static void start_threads()
 
 }
 
-/** handshake
- * Handshake for exchanging crypto information from server.
- * @void: 
- * 
- * Connects to the server, exchanges public key and sends over 
- * symmetric secret key.
- * 
- *  returns void.
- */
-static void handshake()
-{
-
-	char* syn = "connect";
-	int rc = sendto(current_connection->udp_socket, syn, strlen(syn), 0, (struct sockaddr*)&(current_connection->server_addr), sizeof(current_connection->server_addr));
-
-	char buffer[1024];
-    rc = read(current_connection->udp_socket, buffer, sizeof(buffer)-1);
-    if(rc <= 0)
-    {
-    	printf("Could not read public key\n");
-    }
-
-    const char *p = buffer;
-	current_connection->bufio = BIO_new_mem_buf((void*)p, rc);
-	current_connection->myRSA = PEM_read_bio_RSAPublicKey(current_connection->bufio, 0, 0, 0);
-
-	struct crypto_message* msg = vpn_rsa_encrypt(key, sizeof key, current_connection->myRSA);
-
-	rc = sendto(current_connection->udp_socket, msg->buffer, msg->size, 0, (struct sockaddr*)&(current_connection->server_addr), sizeof(current_connection->server_addr));
-	rc = read(current_connection->udp_socket, buffer, 100);
-   	if(rc <= 0)
-    {
-    	printf("Could not read ok\n");
-    }
-
-    free(msg->buffer);
-    free(msg);
-}
-
 int start_vpn_client()
 {
 	signal(SIGINT, stop_client);

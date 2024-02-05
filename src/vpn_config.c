@@ -170,30 +170,33 @@ int create_tun_interface(char* virtual_subnet)
     }
     pclose(fp);
 
-    int pos = strlen(currentip)-1-2;
-    int partip = atoi(currentip+pos);
-
-    printf("Current IP: %s %u\n", currentip, partip);
-
-    free(currentip);
-
-    // change existing interface
-    sprintf(cmd,"ifconfig lmi40 192.168.64.%d/24",partip);
-    //printf("%s\n",cmd);
-    int sys = system(cmd);
-
-    // add new route
-    sprintf(cmd,"ip route add table local_network 192.168.64.0/24 dev lmi40");
-    sys = system(cmd);
-    if(sys < 0)
+    if(strlen(line) > 0)
     {
-        sprintf(cmd,"ip route add 192.168.64.0/24 dev lmi40");
+        int pos = strlen(currentip)-1-2;
+        int partip = atoi(currentip+pos);
+
+        printf("Current IP: %s %u\n", currentip, partip);
+
+        free(currentip);
+
+        // change existing interface
+        sprintf(cmd,"ifconfig lmi40 192.168.64.%d/24",partip);
+        //printf("%s\n",cmd);
+        int sys = system(cmd);
+
+        // add new route
+        sprintf(cmd,"ip route add table local_network 192.168.64.0/24 dev lmi40");
         sys = system(cmd);
+        if(sys < 0)
+        {
+            sprintf(cmd,"ip route add 192.168.64.0/24 dev lmi40");
+            sys = system(cmd);
+        }
     }
 
     // bring up the interface and set mtu
     sprintf(cmd,"ifconfig %s %s up mtu 1440", ifr.ifr_name, virtual_subnet);
-    sys = system(cmd);
+    int sys = system(cmd);
     if(sys < 0)
     {
         printf("Could not activate tun device!\n");

@@ -12,7 +12,7 @@ LOCAL_SHARED_LIBRARIES := libc libm libdl libssl libcrypto liblog
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/includes
 
 LOCAL_CFLAGS := \
-    -std=gnu11 -g -Wall -Wextra -O2 \
+    -std=gnu11 -g -Wall -Wextra -O2 -rdynamic \
 
 LOCAL_LDFLAGS := -Wl,-export-dynamic -Wl,--no-gc-sections
 
@@ -30,7 +30,7 @@ LOCAL_SHARED_LIBRARIES := libc libm libdl libssl libcrypto liblog
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/includes
 
 LOCAL_CFLAGS := \
-    -std=gnu11 -g -Wall -Wextra -O2 \
+    -std=gnu11 -g -Wall -Wextra -O2 -rdynamic \
 
 LOCAL_LDFLAGS := -Wl,-export-dynamic -Wl,--no-gc-sections
 
