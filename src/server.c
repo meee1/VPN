@@ -221,7 +221,7 @@ int start_vpn_client()
 	}
 
 	/* Create TUN interface. */
-	current_connection->tun_fd = create_tun_interface("192.168.88.1/30");
+	current_connection->tun_fd = create_tun_interface("192.168.0.10/24");
 	if(current_connection->tun_fd <= 0)
 	{
 		printf("[ERROR] Could not create TUN device.\n");

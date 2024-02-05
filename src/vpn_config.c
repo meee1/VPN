@@ -159,31 +159,57 @@ int create_tun_interface(char* virtual_subnet)
 */
 
     char cmd [1000] = {0x0};
-    sprintf(cmd,"ifconfig %s %s up mtu 1440", ifr.ifr_name, virtual_subnet);
+
+    char* currentip;
+    FILE* fp = popen("getprop sys.device.ip.address", "r");
+    char line[256]={0x0};
+
+    if(fgets(line, sizeof(line), fp) != NULL){
+        currentip = malloc(strlen(line)+1);
+        strcpy(currentip, line);
+    }
+    pclose(fp);
+
+    int pos = strlen(currentip)-1-2;
+    int partip = atoi(currentip+pos);
+
+    printf("Current IP: %s %u\n", currentip, partip);
+
+    free(currentip);
+
+    // change existing interface
+    sprintf(cmd,"ifconfig lmi40 192.168.64.%d/24",partip);
+    //printf("%s\n",cmd);
     int sys = system(cmd);
+
+    // add new route
+    sprintf(cmd,"ip route add table local_network 192.168.64.0/24 dev lmi40");
+    sys = system(cmd);
+    if(sys < 0)
+    {
+        sprintf(cmd,"ip route add 192.168.64.0/24 dev lmi40");
+        sys = system(cmd);
+    }
+
+    // bring up the interface and set mtu
+    sprintf(cmd,"ifconfig %s %s up mtu 1440", ifr.ifr_name, virtual_subnet);
+    sys = system(cmd);
     if(sys < 0)
     {
         printf("Could not activate tun device!\n");
         exit(EXIT_FAILURE);
     }
 
-    char* route = "192.168.88.0/30";
-
-    sprintf(cmd,"ip route add table local_network %s dev %s", route, ifr.ifr_name);
+    sprintf(cmd,"ip route add table local_network 192.168.0.0/24 dev %s",ifr.ifr_name);
     sys = system(cmd);
-    if(sys < 0)
-    {
-        printf("Could not add route!\n");
-    }
-
-
+/*
     // Set MTU if it is specified.
     ifr.ifr_mtu = mtu;
     if (mtu > 0 && ioctl(fd, SIOCSIFMTU, &ifr)) {
         printf("Cannot set MTU on %s: %s", ifr.ifr_name, strerror(errno));
         goto error;
     }
-
+*/
     char address[65];
     int prefix;
     int chars;
