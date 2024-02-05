@@ -159,13 +159,23 @@ int create_tun_interface(char* virtual_subnet)
 */
 
     char cmd [1000] = {0x0};
-    sprintf(cmd,"ifconfig %s %s up", ifr.ifr_name, virtual_subnet);
+    sprintf(cmd,"ifconfig %s %s up mtu 1440", ifr.ifr_name, virtual_subnet);
     int sys = system(cmd);
     if(sys < 0)
     {
         printf("Could not activate tun device!\n");
         exit(EXIT_FAILURE);
     }
+
+    char* route = "192.168.88.0/30";
+
+    sprintf(cmd,"ip route add table local_network %s dev %s", route, ifr.ifr_name);
+    sys = system(cmd);
+    if(sys < 0)
+    {
+        printf("Could not add route!\n");
+    }
+
 
     // Set MTU if it is specified.
     ifr.ifr_mtu = mtu;
