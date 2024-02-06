@@ -129,8 +129,8 @@ int create_tun_interface(char* virtual_subnet)
     struct ifreq ifr;
     int err;
 
-    if( (fd = open("/dev/tun", O_RDWR | O_NONBLOCK)) == -1 ) {
-        if( (fd = open("/dev/net/tun", O_RDWR | O_NONBLOCK)) == -1 ) {
+    if( (fd = open("/dev/tun", O_RDWR)) == -1 ) {
+        if( (fd = open("/dev/net/tun", O_RDWR)) == -1 ) {
            printf("open /dev/net/tun");           
            exit(1);
         }
