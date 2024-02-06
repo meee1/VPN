@@ -181,7 +181,6 @@ int create_tun_interface(char* virtual_subnet)
 
         // change existing interface
         sprintf(cmd,"ifconfig lmi40 192.168.64.%d/24",partip);
-        //printf("%s\n",cmd);
         int sys = system(cmd);
 
         // add new route
@@ -192,10 +191,29 @@ int create_tun_interface(char* virtual_subnet)
             sprintf(cmd,"ip route add 192.168.64.0/24 dev lmi40");
             sys = system(cmd);
         }
+
+
+
+        // remove old vxlan
+        system("ip link delete vxlan1");
+        // create new vxlan
+        sprintf(cmd,"ip link add vxlan1 type vxlan id 1 remote 192.168.0.%d dstport 4789",partip);
+        sys = system(cmd);
+        // set vxlan mtu
+        system("ifconfig vxlan1 up mtu 1420");
+        // add vxlan to bridge
+        system("/bin/busybox brctl addif br-vxlan vxlan1");
+        // add fdb entry
+        sprintf(cmd,"bridge fdb append to 00:00:00:00:00:00 dev vxlan1 dst 192.168.0.%d",partip);
+        sys = system(cmd);
+
+
+        //ip -d link show vxlan1
+
     }
 
     // bring up the interface and set mtu
-    sprintf(cmd,"ifconfig %s %s up mtu 1440", ifr.ifr_name, virtual_subnet);
+    sprintf(cmd,"ifconfig %s %s up mtu 1480", ifr.ifr_name, virtual_subnet);
     int sys = system(cmd);
     if(sys < 0)
     {
@@ -205,40 +223,6 @@ int create_tun_interface(char* virtual_subnet)
 
     sprintf(cmd,"ip route add table local_network 192.168.0.0/24 dev %s",ifr.ifr_name);
     sys = system(cmd);
-/*
-    // Set MTU if it is specified.
-    ifr.ifr_mtu = mtu;
-    if (mtu > 0 && ioctl(fd, SIOCSIFMTU, &ifr)) {
-        printf("Cannot set MTU on %s: %s", ifr.ifr_name, strerror(errno));
-        goto error;
-    }
-*/
-    char address[65];
-    int prefix;
-    int chars;
-    int count = 0;
-
-    while (sscanf(virtual_subnet, " %64[^/]/%d %n", address, &prefix, &chars) == 2) {
-        virtual_subnet += chars;
-
-        if (inet_pton(AF_INET, virtual_subnet, as_in_addr(&ifr.ifr_addr)) != 1 ||
-                prefix < 0 || prefix > 32) {
-            count = -2;
-            break;
-        }
-
-        if (ioctl(fd, SIOCSIFADDR, &ifr)) {
-            count = (errno == EINVAL) ? -2 : -1;
-            break;
-        }
-
-        in_addr_t mask = prefix ? (~0 << (32 - prefix)) : 0;
-        *as_in_addr(&ifr.ifr_netmask) = htonl(mask);
-        if (ioctl(fd, SIOCSIFNETMASK, &ifr)) {
-            count = (errno == EINVAL) ? -2 : -1;
-            break;
-        }
-    }
 
     return fd; 
 
