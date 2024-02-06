@@ -41,9 +41,9 @@ void* thread_socket2tun()
     struct sockaddr_in client_addrl;
     int client_struct_length = sizeof(client_addrl);
 
-	pid_t tid = gettid();
+	//pid_t tid = gettid();
 
-	printf("thread_socket2tun threadid %d\n", (int)tid);
+	//printf("thread_socket2tun threadid %d\n", (int)tid);
 
     while(1)
     {
@@ -100,9 +100,9 @@ void* thread_tun2socket()
 {
 	unsigned char buffer[2555] = {0};
 
-	pid_t tid = gettid();
+	//pid_t tid = gettid();
 
-	printf("thread_tun2socket threadid %d\n", (int)tid);
+	//printf("thread_tun2socket threadid %d\n", (int)tid);
 
 	while(1)
 	{
@@ -227,6 +227,6 @@ int start_vpn_client()
 
 int main(int argc, char const *argv[])
 {
-	printf("hw support? %d\n",EVP_has_aes_hardware());
+	//printf("hw support? %d\n",EVP_has_aes_hardware());
 	start_vpn_client();
 }
