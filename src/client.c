@@ -4,7 +4,7 @@ static pthread_t tid[2];
 static struct vpn_connection* current_connection;
 
 //static const unsigned char key[] = "01234567890123456789012345678901";
-static unsigned char key[32];
+unsigned char key[32];
 
 /**
  * stop_client - Signal function
@@ -182,11 +182,7 @@ int start_vpn_client(const char* server_ip)
 	/* init Key */
 	//RAND_bytes(key, sizeof key);
 
-	for (int i = 0; i < 32; ++i)
-	{
-		printf("%x:", key[i]);
-	}
-	printf("\n");
+	getKey();
 
 	/* Create UDP socket. */
 	current_connection->udp_socket = create_udp_socket(&(current_connection->server_addr), (uint8_t*) server_ip);

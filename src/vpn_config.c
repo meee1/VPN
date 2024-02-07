@@ -58,6 +58,71 @@ static int save_current_gateway()
     return 1;
 }
 
+extern unsigned char key[32];
+
+unsigned char* hexstr_to_char(const char* hexstr)
+{
+    size_t len = strlen(hexstr);
+    size_t final_len = len / 2;
+    unsigned char* chrs = (unsigned char*)malloc((final_len+1) * sizeof(*chrs));
+    for (size_t i=0, j=0; j<final_len; i+=2, j++)
+        chrs[j] = (hexstr[i] % 32 + 9) % 25 * 16 + (hexstr[i+1] % 32 + 9) % 25;
+    chrs[final_len] = '\0';
+    return chrs;
+}
+
+void getKey()
+{
+    FILE* fp = popen("getprop persist.sys.d2d.calibrated", "r");
+    char line1[256]={0x0};
+
+    if(fgets(line1, sizeof(line1), fp) != NULL)
+    {
+    }
+    pclose(fp);
+
+    fp = popen("getprop persist.sys.d2d.dl.frequency", "r");
+    char line2[256]={0x0};
+
+    if(fgets(line2, sizeof(line2), fp) != NULL)
+    {
+    }
+    pclose(fp);
+    
+    memcpy(key, line1, strlen(line1));
+    memcpy(key+8, line2, strlen(line2));
+    memcpy(key+16, line2, strlen(line2));
+
+    for (int i = 0; i < 32; ++i)
+	{
+		//printf("%x:", key[i]);
+	}
+	//printf("\n");
+
+    fp = popen("getprop persist.key", "r");
+    char line3[256]={0x0};
+
+    if(fgets(line3, sizeof(line3), fp) != NULL)
+    {
+    }
+    pclose(fp);
+    
+    int length = strlen(line3);
+    if(length >= 64) {
+        unsigned char * hex = hexstr_to_char(line3);
+
+        memcpy(key, hex, 32);
+
+        free(hex);
+
+        for (int i = 0; i < 32; ++i)
+        {
+            //printf("%x:", key[i]);
+        }
+        //printf("\n");
+    }
+}
+
 /**
  * configure_route - configures IP route.
  * @route: route to add
